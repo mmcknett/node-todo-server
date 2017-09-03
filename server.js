@@ -21,10 +21,9 @@ http.createServer(main).listen(8081);
 function main(request, response)
 {
     console.log('Handling request...');
-    const {method, url} = request;
 
     request.on('error', onRequestError);
-    route(request, response, method, url);
+    route(request, response);
 }
 
 function onRequestError(err)
@@ -32,8 +31,10 @@ function onRequestError(err)
     console.error("Request error: " + err);
 }
 
-function route(request, response, method, url)
+function route(request, response)
 {
+    const {method, url} = request;
+
     if (method === "GET")
     {
         console.log('Handling GET...');
@@ -132,7 +133,7 @@ function routePost(request, response, url)
     loadBodyAndHandleRequestEnd(request,
         (postData) =>
         {
-            response.on('end', onResponseError);
+            response.on('error', onResponseError);
 
             if (url.startsWith(todoApiUrl))
             {
@@ -165,7 +166,7 @@ function loadBodyAndHandleRequestEnd(request, handler)
 
 function parseAndUpdateTodo(response, postData, url)
 {
-    let index = parseInt(url.slice(todoApiUrl.length + 1));
+    const index = parseInt(url.slice(todoApiUrl.length + 1));
     if (isNaN(index))
     {
         console.error('Requested index is not a number.');
@@ -195,7 +196,7 @@ function updateTodo(index, updatedState)
         (todos[index].isDone ? "" : "not ") +
         "done and now is" +
         (updatedState.isDone ? "" : "not") + ".");
-        
+
     todos[index].isDone = updatedState.isDone;
 }
 
