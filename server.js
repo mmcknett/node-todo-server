@@ -16,7 +16,7 @@ const todoPage = "./pages/todo.html";
 const todoUrl = "/todo";
 const todoApiUrl = "/api/todo";
 
-http.createServer(main).listen(8080);
+http.createServer(main).listen(8081);
 
 function main(request, response)
 {
@@ -38,6 +38,11 @@ function route(request, response, method, url)
     {
         console.log('Handling GET...');
         routeGet(request, response, url);
+    }
+    else if (method === "POST")
+    {
+        console.log('Handling POST...');
+        routePost(request, response, url);
     }
     else
     {
@@ -118,5 +123,85 @@ function defaultResponse(response)
 {
     console.log('Handling default response with 404.');
     response.statusCode = 404;
+    response.end();
+}
+
+function routePost(request, response, url)
+{
+    // Optimization: check if URL is supported before loading body.
+    loadBodyAndHandleRequestEnd(request,
+        (postData) =>
+        {
+            response.on('end', onResponseError);
+
+            if (url.startsWith(todoApiUrl))
+            {
+                parseAndUpdateTodo(response, postData, url);
+            }
+            else
+            {
+                defaultResponse(response);
+            }
+        }
+    );
+}
+
+function loadBodyAndHandleRequestEnd(request, handler)
+{
+    console.log('Loading body...');
+    let body = [];
+    request.on('data', (chunk) =>
+    {
+        body.push(chunk);
+    });
+    request.on('end', () =>
+    {
+        body = Buffer.concat(body).toString();
+
+        console.log('Body loaded: ' + body);
+        handler(body);
+    });
+}
+
+function parseAndUpdateTodo(response, postData, url)
+{
+    let index = parseInt(url.slice(todoApiUrl.length + 1));
+    if (isNaN(index))
+    {
+        console.error('Requested index is not a number.');
+        return badRequestResponse(response);
+    }
+
+    let updatedState;
+    try
+    {
+        updatedState = JSON.parse(postData);
+    }
+    catch (e)
+    {
+        console.error('Invalid POST data.');
+        return badRequestResponse(response);
+    }
+
+    updateTodo(index, updatedState);
+
+    response.statusCode = 200;
+    response.end(JSON.stringify(todos[index]));
+}
+
+function updateTodo(index, updatedState)
+{
+    console.log(todos[index].text + " was " +
+        (todos[index].isDone ? "" : "not ") +
+        "done and now is" +
+        (updatedState.isDone ? "" : "not") + ".");
+        
+    todos[index].isDone = updatedState.isDone;
+}
+
+function badRequestResponse(response)
+{
+    console.log('Returning bad request.');
+    response.statusCode = 400;
     response.end();
 }
