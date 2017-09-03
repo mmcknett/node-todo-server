@@ -58,6 +58,10 @@ function routeGet(request, response, url)
             {
                 todoResponse(response);
             }
+            else if (url === todoApiUrl)
+            {
+                todoApiResponse(response);
+            }
             else
             {
                 defaultResponse(response);
@@ -84,6 +88,14 @@ function todoResponse(response)
     fs.readFile(todoPage, (err, fileData) => {
         respondWithFile(err, fileData, response);
     });
+}
+
+function todoApiResponse(response)
+{
+    console.log('Returning the state of the todo list in memory.');
+    response.statusCode = 200;
+    response.setHeader('Content-Type', 'application/json');
+    response.end(JSON.stringify(todos));
 }
 
 function respondWithFile(err, fileData, response)
