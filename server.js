@@ -104,7 +104,7 @@ function todoResponse(response)
 
 function todoCodeBehindResponse(response)
 {
-    console.log('Reading the transpiled todo codebehind.');
+    console.log('Reading the transpiled, bundled todo codebehind.');
     fs.readFile(todoCodeBehind, (err, fileData) => {
         respondWithFile(err, fileData, response);
     });

@@ -14,9 +14,18 @@ build() {
 }
 
 watch() {
+    trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+    echo Starting babel...
     babel $SOURCE --watch --out-file $TRANSPILED &
+    BABELPID=$!
+
+    echo Starting watchify...
     watchify $TRANSPILED -o $BUNDLED &
-    wait
+    WATCHIFYPID=$!
+
+    echo Waiting...
+    wait $BABELPID $WATCHIFYPID
 }
 
 [ -z $WATCH ] && build || watch
