@@ -13,6 +13,8 @@ const todos = [
 ];
 
 const todoPage = "./pages/todo.html";
+const todoCodeBehind = "./pages/react-bld/todo-bundled.js";
+const todoCodebehindUrl = "/todo/todo.js";
 const todoUrl = "/todo";
 const todoApiUrl = "/api/todo";
 
@@ -64,6 +66,10 @@ function routeGet(request, response, url)
             {
                 todoResponse(response);
             }
+            else if (url == todoCodebehindUrl)
+            {
+                todoCodeBehindResponse(response);
+            }
             else if (url === todoApiUrl)
             {
                 todoApiResponse(response);
@@ -96,6 +102,14 @@ function todoResponse(response)
     });
 }
 
+function todoCodeBehindResponse(response)
+{
+    console.log('Reading the transpiled todo codebehind.');
+    fs.readFile(todoCodeBehind, (err, fileData) => {
+        respondWithFile(err, fileData, response);
+    });
+}
+
 function todoApiResponse(response)
 {
     console.log('Returning the state of the todo list in memory.');
@@ -113,7 +127,8 @@ function respondWithFile(err, fileData, response)
     }
     else
     {
-        console.log('Returning html: ' + fileData);
+        console.log('Returning file.  First 1024 characters: '
+            + fileData.slice(0, 1024));
         response.statusCode = 200;
         response.setHeader('Content-Type', 'text/html');
         response.end(fileData);
