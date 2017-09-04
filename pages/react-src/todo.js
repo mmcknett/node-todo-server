@@ -16,11 +16,7 @@ class Todo extends React.Component {
     constructor() {
         super();
         this.state = {
-            todoList: [
-                { isDone: true,  text: "Something old" },
-                { isDone: true,  text: "Something new" },
-                { isDone: true,  text: "Something borrowed" },
-                { isDone: true,  text: "Something blue" } ]
+            todoList: [] // Start with an empty todo list.
             };
     }
 
@@ -31,6 +27,23 @@ class Todo extends React.Component {
         this.setState({
             todoList
         });
+    }
+
+    componentDidMount() {
+        const xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState == XMLHttpRequest.DONE &&
+                xmlhttp.status == 200) {
+                const todoList = JSON.parse(xmlhttp.responseText);
+                this.setState({
+                    todoList
+                })
+            }
+        }
+
+        xmlhttp.open("GET", "api/todo", true);
+        xmlhttp.send();
     }
 
     render() {
