@@ -22,11 +22,24 @@ class Todo extends React.Component {
 
     todoEntryClicked(index)
     {
-        const todoList = this.state.todoList.slice();
-        todoList[index].isDone = !todoList[index].isDone;
-        this.setState({
-            todoList
-        });
+        const newIsDone = !this.state.todoList[index].isDone;
+        const xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState == XMLHttpRequest.DONE &&
+                xmlhttp.status == 200)
+            {
+                const todoEntryForIndex = JSON.parse(xmlhttp.responseText);
+                const todoList = this.state.todoList.slice();
+                todoList[index] = todoEntryForIndex;
+                this.setState({
+                    todoList
+                });
+            }
+        }
+
+        xmlhttp.open("POST", `api/todo/${index}`, true);
+        xmlhttp.send(JSON.stringify({isDone: newIsDone}));
     }
 
     componentDidMount() {
