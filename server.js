@@ -47,6 +47,11 @@ function route(request, response)
         console.log('Handling POST...');
         routePost(request, response, url);
     }
+    else if (method === "PUT")
+    {
+        console.log('Handling PUT...');
+        routePut(request, response, url);
+    }
     else
     {
         console.log('Ignoring other HTTP verbs');
@@ -181,52 +186,57 @@ function loadBodyAndHandleRequestEnd(request, handler)
 
 function parseAndUpdateTodo(response, postData, url)
 {
-    const index = parseInt(url.slice(todoApiUrl.length + 1));
-    if (isNaN(index))
+    console.log(`Parsing POST data: ${postData}`)
+    const index = getIndexFromUrl(todoApiUrl, url);
+    if (!validIndex(index))
     {
         console.error('Requested index is not a number.');
         return badRequestResponse(response);
     }
 
-    let updatedState;
-    try
-    {
-        updatedState = JSON.parse(postData);
-    }
-    catch (e)
+    const updatedState = tryParseDataAsJson(postData);
+    if (!updatedState)
     {
         console.error('Invalid POST data.');
         return badRequestResponse(response);
     }
 
-    if(updateTodo(index, updatedState))
-    {
-        response.statusCode = 200;
-        response.end(JSON.stringify(todos[index]));
-    }
-    else
-    {
-        return badRequestResponse(response);
+    updateTodo(index, updatedState)
+
+    response.statusCode = 200;
+    response.end(JSON.stringify(todos[index]));
+}
+
+function getIndexFromUrl(baseUrl, url)
+{
+    return parseInt(url.slice(baseUrl.length + 1));
+}
+
+function validIndex(index)
+{
+    return !isNaN(index) &&
+        Number.isInteger(index) &&
+        index < todos.length &&
+        index >= 0;
+}
+
+function tryParseDataAsJson(data)
+{
+    try {
+        return JSON.parse(data);
+    } catch (e) {
+        return null;
     }
 }
 
 function updateTodo(index, updatedState)
 {
-    if (index < todos.length && index >= 0)
-    {
-        console.log(todos[index].text + " was " +
-            (todos[index].isDone ? "" : "not ") +
-            "done and now is" +
-            (updatedState.isDone ? "" : "not") + ".");
+    console.log(todos[index].text + " was " +
+        (todos[index].isDone ? "" : "not ") +
+        "done and now is" +
+        (updatedState.isDone ? "" : " not") + ".");
 
-        todos[index].isDone = updatedState.isDone;
-        return true;
-    }
-    else
-    {
-        console.error(`No todo at index ${index}`);
-        return false;
-    }
+    todos[index].isDone = updatedState.isDone;
 }
 
 function badRequestResponse(response)
@@ -234,4 +244,50 @@ function badRequestResponse(response)
     console.log('Returning bad request.');
     response.statusCode = 400;
     response.end();
+}
+
+function routePut(request, response, url)
+{
+    // Optimization: check if URL is supported before loading body.
+    loadBodyAndHandleRequestEnd(request,
+        (putData) =>
+        {
+            response.on('error', onResponseError);
+
+            if (url === todoApiUrl)
+            {
+                parseAndAddTodo(response, putData);
+            }
+            else
+            {
+                defaultResponse(response);
+            }
+        }
+    );
+}
+
+function parseAndAddTodo(response, putData)
+{
+    const newEntry = tryParseDataAsJson(putData);
+    if (!newEntry ||
+        !('text' in newEntry))
+    {
+        console.error('Invalid PUT data.');
+        return badRequestResponse(response);
+    }
+
+    addTodo(newEntry)
+
+    // Respond as though GET was called on the todos api.
+    todoApiResponse(response);
+}
+
+function addTodo(newEntry)
+{
+    todos.push(
+        {
+            isDone: newEntry.isDone,
+            text: newEntry.text
+        }
+    );
 }
