@@ -16,13 +16,13 @@ class TodoAddBox extends React.Component {
     }
 
     keyPressed(event) {
-        const chCode = ('charCode' in event) ? event.charCode : event.keyCode;
-        if (chCode == 13 /* Enter */)
+        if (event.key === "Enter")
         {
+            console.log(`Handling Enter by adding an entry.  Text is ${this.state.text}`);
+            this.props.onAddEntry(this.state.text);
             this.setState({
                 text: ""
             });
-            this.props.onAddEntry(this.state.text);
         }
     }
 
