@@ -212,7 +212,7 @@ function parseAndUpdateTodo(response, postData, url)
 
 function updateTodo(index, updatedState)
 {
-    if (index < todos.length)
+    if (index < todos.length && index >= 0)
     {
         console.log(todos[index].text + " was " +
             (todos[index].isDone ? "" : "not ") +
