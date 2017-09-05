@@ -2,14 +2,16 @@ const http = require('http');
 const fs = require('fs');
 
 const todos = [
-    {
-        isDone: false,
-        text: "First todo"
-    },
-    {
-        isDone: false,
-        text: "Second todo"
-    }
+    // Uncomment to populate the server with some initial data...
+    //
+    // {
+    //     isDone: false,
+    //     text: "First todo"
+    // },
+    // {
+    //     isDone: false,
+    //     text: "Second todo"
+    // }
 ];
 
 const todoPage = "./pages/todo.html";
