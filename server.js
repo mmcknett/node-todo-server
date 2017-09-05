@@ -44,15 +44,15 @@ function route(request, response)
         console.log('Handling GET...');
         routeGet(request, response, url);
     }
-    else if (method === "POST")
-    {
-        console.log('Handling POST...');
-        routePost(request, response, url);
-    }
     else if (method === "PUT")
     {
         console.log('Handling PUT...');
         routePut(request, response, url);
+    }
+    else if (method === "POST")
+    {
+        console.log('Handling POST...');
+        routePost(request, response, url);
     }
     else
     {
@@ -149,17 +149,17 @@ function defaultResponse(response)
     response.end();
 }
 
-function routePost(request, response, url)
+function routePut(request, response, url)
 {
     // Optimization: check if URL is supported before loading body.
     loadBodyAndHandleRequestEnd(request,
-        (postData) =>
+        (putData) =>
         {
             response.on('error', onResponseError);
 
             if (url.startsWith(todoApiUrl))
             {
-                parseAndUpdateTodo(response, postData, url);
+                parseAndUpdateTodo(response, putData, url);
             }
             else
             {
@@ -186,20 +186,20 @@ function loadBodyAndHandleRequestEnd(request, handler)
     });
 }
 
-function parseAndUpdateTodo(response, postData, url)
+function parseAndUpdateTodo(response, todoData, url)
 {
-    console.log(`Parsing POST data: ${postData}`)
+    console.log(`Parsing data: ${todoData}`)
     const index = getIndexFromUrl(todoApiUrl, url);
     if (!validIndex(index))
     {
-        console.error('Requested index is not a number.');
+        console.error('Requested index is not valid.');
         return badRequestResponse(response);
     }
 
-    const updatedState = tryParseDataAsJson(postData);
+    const updatedState = tryParseDataAsJson(todoData);
     if (!updatedState)
     {
-        console.error('Invalid POST data.');
+        console.error('Invalid data.');
         return badRequestResponse(response);
     }
 
@@ -248,17 +248,17 @@ function badRequestResponse(response)
     response.end();
 }
 
-function routePut(request, response, url)
+function routePost(request, response, url)
 {
     // Optimization: check if URL is supported before loading body.
     loadBodyAndHandleRequestEnd(request,
-        (putData) =>
+        (postData) =>
         {
             response.on('error', onResponseError);
 
             if (url === todoApiUrl)
             {
-                parseAndAddTodo(response, putData);
+                parseAndAddTodo(response, postData);
             }
             else
             {
@@ -268,13 +268,13 @@ function routePut(request, response, url)
     );
 }
 
-function parseAndAddTodo(response, putData)
+function parseAndAddTodo(response, todoData)
 {
-    const newEntry = tryParseDataAsJson(putData);
+    const newEntry = tryParseDataAsJson(todoData);
     if (!newEntry ||
         !('text' in newEntry))
     {
-        console.error('Invalid PUT data.');
+        console.error(`Invalid data: ${todoData}`);
         return badRequestResponse(response);
     }
 
@@ -286,9 +286,10 @@ function parseAndAddTodo(response, putData)
 
 function addTodo(newEntry)
 {
+    const isDone = ('isDone' in newEntry) ? newEntry.isDone : false;
     todos.push(
         {
-            isDone: newEntry.isDone,
+            isDone,
             text: newEntry.text
         }
     );

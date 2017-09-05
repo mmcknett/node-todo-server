@@ -76,7 +76,7 @@ class Todo extends React.Component {
             }
         }
 
-        xmlhttp.open("POST", `api/todo/${index}`, true);
+        xmlhttp.open("PUT", `api/todo/${index}`, true);
         xmlhttp.send(JSON.stringify({isDone: newIsDone}));
     }
 
@@ -101,7 +101,7 @@ class Todo extends React.Component {
             }
         }
 
-        xmlhttp.open("PUT", "api/todo", true);
+        xmlhttp.open("POST", "api/todo", true);
         xmlhttp.send(JSON.stringify(newEntry));
     }
 
