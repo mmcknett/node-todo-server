@@ -199,20 +199,34 @@ function parseAndUpdateTodo(response, postData, url)
         return badRequestResponse(response);
     }
 
-    updateTodo(index, updatedState);
-
-    response.statusCode = 200;
-    response.end(JSON.stringify(todos[index]));
+    if(updateTodo(index, updatedState))
+    {
+        response.statusCode = 200;
+        response.end(JSON.stringify(todos[index]));
+    }
+    else
+    {
+        return badRequestResponse(response);
+    }
 }
 
 function updateTodo(index, updatedState)
 {
-    console.log(todos[index].text + " was " +
-        (todos[index].isDone ? "" : "not ") +
-        "done and now is" +
-        (updatedState.isDone ? "" : "not") + ".");
+    if (index < todos.length)
+    {
+        console.log(todos[index].text + " was " +
+            (todos[index].isDone ? "" : "not ") +
+            "done and now is" +
+            (updatedState.isDone ? "" : "not") + ".");
 
-    todos[index].isDone = updatedState.isDone;
+        todos[index].isDone = updatedState.isDone;
+        return true;
+    }
+    else
+    {
+        console.error(`No todo at index ${index}`);
+        return false;
+    }
 }
 
 function badRequestResponse(response)
