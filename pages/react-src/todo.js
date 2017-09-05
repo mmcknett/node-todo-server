@@ -82,18 +82,27 @@ class Todo extends React.Component {
 
     todoAdded(text)
     {
-        let todoList = this.state.todoList.slice();
         const newEntry = {
             isDone: false,
             text
         };
         console.log(`Adding "${newEntry.text}", isDone is ${newEntry.isDone}`);
-        todoList = todoList.concat([
-            newEntry
-        ]);
-        this.setState({
-            todoList
-        });
+
+        const xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState == XMLHttpRequest.DONE &&
+                xmlhttp.status == 200)
+            {
+                const todoList = JSON.parse(xmlhttp.responseText);
+                this.setState({
+                    todoList
+                });
+            }
+        }
+
+        xmlhttp.open("PUT", "api/todo", true);
+        xmlhttp.send(JSON.stringify(newEntry));
     }
 
     componentDidMount() {
